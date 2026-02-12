@@ -331,6 +331,14 @@ jobs:
           mv Throne.deb $version_standalone-debian-system-qt-x64.deb
           rm -rf Throne
           ####
+          bash ../script/pack_rpm.sh ${{ github.event.inputs.tag }}
+          mv Throne.rpm $version_standalone-rpm-x64.rpm
+          rm -rf Throne
+          ####
+          bash ../script/pack_rpm_system_qt.sh ${{ github.event.inputs.tag }}
+          mv Throne.rpm $version_standalone-rpm-system-qt-x64.rpm
+          rm -rf Throne
+          ####
           mv linux-amd64 Throne
           mv Throne/Throne.debug debug/$version_standalone-linux-amd64.debug
           zip -9 -r $version_standalone-linux-amd64.zip Throne
@@ -401,6 +409,7 @@ jobs:
           rm -rf linux-system-qt-amd64
           rm -rf *.pdb
           rm -rf debug*
+          rm -rf ~/rpmbuild
       - name: Uploading Artifact
         uses: actions/upload-artifact@v4.6.2
         with:
