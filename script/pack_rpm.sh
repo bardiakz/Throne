@@ -3,6 +3,9 @@ set -e
 
 version="$1"
 
+# Save current directory (should be deployment/)
+DEPLOY_DIR=$(pwd)
+
 # Install rpm-build if not present
 if ! command -v rpmbuild &> /dev/null; then
     sudo apt-get update
@@ -18,8 +21,8 @@ mkdir -p ${INSTALL_DIR}/opt/Throne
 mkdir -p ${INSTALL_DIR}/usr/share/applications
 mkdir -p ${INSTALL_DIR}/usr/share/icons/hicolor/512x512/apps
 
-# Copy application files
-cp -r linux-amd64/* ${INSTALL_DIR}/opt/Throne/
+# Copy application files (using absolute path)
+cp -r ${DEPLOY_DIR}/linux-amd64/* ${INSTALL_DIR}/opt/Throne/
 rm -f ${INSTALL_DIR}/opt/Throne/Throne.debug
 chmod +x ${INSTALL_DIR}/opt/Throne/Throne
 chmod +x ${INSTALL_DIR}/opt/Throne/Core
@@ -37,7 +40,7 @@ Categories=Network;Application;
 EOF
 
 # Copy icon
-cp linux-amd64/Throne.png ${INSTALL_DIR}/usr/share/icons/hicolor/512x512/apps/throne.png
+cp ${DEPLOY_DIR}/linux-amd64/Throne.png ${INSTALL_DIR}/usr/share/icons/hicolor/512x512/apps/throne.png
 
 # Create spec file
 cat > ~/rpmbuild/SPECS/throne.spec <<EOF
@@ -91,7 +94,15 @@ tar czf ~/rpmbuild/SOURCES/throne-${version}.tar.gz throne-${version}
 cd ~/rpmbuild
 rpmbuild -ba SPECS/throne.spec
 
-# Copy the built RPM to deployment directory
-find ~/rpmbuild/RPMS -name "throne-${version}-1.*.rpm" -exec cp {} ./Throne.rpm \;
+# Return to deployment directory
+cd ${DEPLOY_DIR}
+
+# Copy the built RPM
+cp ~/rpmbuild/RPMS/x86_64/throne-${version}-1.*.rpm ./Throne.rpm 2>/dev/null || \
+cp ~/rpmbuild/RPMS/aarch64/throne-${version}-1.*.rpm ./Throne.rpm 2>/dev/null || {
+    echo "Error: Could not find RPM package"
+    ls -la ~/rpmbuild/RPMS/*/
+    exit 1
+}
 
 echo "RPM package created successfully: Throne.rpm"
