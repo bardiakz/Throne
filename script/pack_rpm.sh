@@ -30,7 +30,7 @@ mkdir -p ${INSTALL_DIR}/usr/share/applications
 mkdir -p ${INSTALL_DIR}/usr/share/icons/hicolor/512x512/apps
 
 # Copy application files (using absolute path)
-cp -r ${DEPLOY_DIR}/linux-system-qt-${ARCH}/* ${INSTALL_DIR}/opt/Throne/
+cp -r ${DEPLOY_DIR}/linux-${ARCH}/* ${INSTALL_DIR}/opt/Throne/
 rm -f ${INSTALL_DIR}/opt/Throne/Throne.debug
 chmod +x ${INSTALL_DIR}/opt/Throne/Throne
 chmod +x ${INSTALL_DIR}/opt/Throne/Core
@@ -48,7 +48,7 @@ Categories=Network;Application;
 EOF
 
 # Copy icon
-cp ${DEPLOY_DIR}/linux-system-qt-${ARCH}/Throne.png ${INSTALL_DIR}/usr/share/icons/hicolor/512x512/apps/throne.png
+cp ${DEPLOY_DIR}/linux-${ARCH}/Throne.png ${INSTALL_DIR}/usr/share/icons/hicolor/512x512/apps/throne.png
 
 # Create spec file
 cat > ~/rpmbuild/SPECS/throne.spec <<EOF
@@ -61,11 +61,11 @@ License:        GPL
 URL:            https://github.com/throneproj/throne
 Source0:        %{name}-%{version}.tar.gz
 
-Requires:       desktop-file-utils, qt6-qtbase, qt6-qtbase-gui, qt6-qtwayland, libxcb, xcb-util-cursor
+Requires:       desktop-file-utils
 
 %description
 Throne is a Qt based cross-platform GUI proxy configuration manager
-with sing-box backend. This package uses system Qt libraries.
+with sing-box backend. This package bundles its Qt runtime.
 
 %prep
 %setup -q
