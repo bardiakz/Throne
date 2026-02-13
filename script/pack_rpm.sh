@@ -6,6 +6,14 @@ version="$1"
 # Save current directory (should be deployment/)
 DEPLOY_DIR=$(pwd)
 
+if [[ $(uname -m) == 'aarch64' || $(uname -m) == 'arm64' ]]; then
+  ARCH="arm64"
+  ARCH_RPM="aarch64"
+else
+  ARCH="amd64"
+  ARCH_RPM="x86_64"
+fi
+
 # Install rpm-build if not present
 if ! command -v rpmbuild &> /dev/null; then
     sudo apt-get update
@@ -22,7 +30,7 @@ mkdir -p ${INSTALL_DIR}/usr/share/applications
 mkdir -p ${INSTALL_DIR}/usr/share/icons/hicolor/512x512/apps
 
 # Copy application files (using absolute path)
-cp -r ${DEPLOY_DIR}/linux-amd64/* ${INSTALL_DIR}/opt/Throne/
+cp -r ${DEPLOY_DIR}/linux-system-qt-${ARCH}/* ${INSTALL_DIR}/opt/Throne/
 rm -f ${INSTALL_DIR}/opt/Throne/Throne.debug
 chmod +x ${INSTALL_DIR}/opt/Throne/Throne
 chmod +x ${INSTALL_DIR}/opt/Throne/Core
@@ -40,7 +48,7 @@ Categories=Network;Application;
 EOF
 
 # Copy icon
-cp ${DEPLOY_DIR}/linux-amd64/Throne.png ${INSTALL_DIR}/usr/share/icons/hicolor/512x512/apps/throne.png
+cp ${DEPLOY_DIR}/linux-system-qt-${ARCH}/Throne.png ${INSTALL_DIR}/usr/share/icons/hicolor/512x512/apps/throne.png
 
 # Create spec file
 cat > ~/rpmbuild/SPECS/throne.spec <<EOF
@@ -53,11 +61,11 @@ License:        GPL
 URL:            https://github.com/throneproj/throne
 Source0:        %{name}-%{version}.tar.gz
 
-Requires:       desktop-file-utils
+Requires:       desktop-file-utils, qt6-qtbase, qt6-qtbase-gui, qt6-qtwayland, libxcb, xcb-util-cursor
 
 %description
 Throne is a Qt based cross-platform GUI proxy configuration manager
-with sing-box backend.
+with sing-box backend. This package uses system Qt libraries.
 
 %prep
 %setup -q
@@ -98,8 +106,7 @@ rpmbuild -ba SPECS/throne.spec
 cd ${DEPLOY_DIR}
 
 # Copy the built RPM
-cp ~/rpmbuild/RPMS/x86_64/throne-${version}-1.*.rpm ./Throne.rpm 2>/dev/null || \
-cp ~/rpmbuild/RPMS/aarch64/throne-${version}-1.*.rpm ./Throne.rpm 2>/dev/null || {
+cp ~/rpmbuild/RPMS/${ARCH_RPM}/throne-${version}-1.*.rpm ./Throne.rpm 2>/dev/null || {
     echo "Error: Could not find RPM package"
     ls -la ~/rpmbuild/RPMS/*/
     exit 1
